@@ -37,10 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.garcia.avisoscampus.model.PermisoUi
 import com.garcia.avisoscampus.notificacion.Notificador
+import com.garcia.avisoscampus.receiver.CargadorReceiver
 import com.garcia.avisoscampus.receiver.ModoAvionReceiver
 import com.garcia.avisoscampus.viewmodel.AvisosViewModel
 
@@ -51,6 +54,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
+    val escuchandoCargador by vm.escuchandoCargador.collectAsState()
     val avisos by vm.avisos.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
     val lanzador = rememberLauncherForActivityResult(
@@ -70,6 +74,20 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
+            onDispose { contexto.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
+        }
+    }
+
+    DisposableEffect(contexto, escuchandoCargador) {
+        if (escuchandoCargador) {
+            val receptor = CargadorReceiver(vm::alCambiarCargador)
+            val filtro = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(contexto, receptor, filtro, ContextCompat.RECEIVER_NOT_EXPORTED)
             onDispose { contexto.unregisterReceiver(receptor) }
         } else {
             onDispose { }
@@ -173,6 +191,18 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     Switch(checked = escuchando, onCheckedChange = vm::cambiarEscucha)
                 }
                 Text("Activa o desactiva el modo avión del celular", style = MaterialTheme.typography.bodySmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Escuchar el cargador", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = escuchandoCargador,
+                        onCheckedChange = vm::cambiarEscuchaCargador,
+                        modifier = Modifier.semantics { contentDescription = "Escuchar el cargador" }
+                    )
+                }
             }
 
             HistorialAvisos(avisos)

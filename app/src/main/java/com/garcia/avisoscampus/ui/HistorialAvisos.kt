@@ -35,6 +35,7 @@ private fun FilaAviso(aviso: Aviso) {
         Origen.BOTON -> MaterialTheme.colorScheme.primary
         Origen.RECORDATORIO -> Color(0xFF795100)
         Origen.MODO_AVION -> Color(0xFF5A408A)
+        Origen.CARGADOR -> Color(0xFF17643B)
     }
 
     Surface(
