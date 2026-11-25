@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -51,10 +52,14 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
     val avisos by vm.avisos.collectAsState()
+    val mensaje by vm.mensaje.collectAsState()
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
         vm::permisoRespondido
     )
+    val ajustes = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        vm.permisoRespondido(Notificador.tienePermiso(contexto))
+    }
 
     DisposableEffect(contexto, escuchando) {
         if (escuchando) {
@@ -77,9 +82,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
         }
 
         vm.eventos.collect { aviso ->
-            @Suppress("UNUSED_VARIABLE")
-            val mostrado = Notificador.mostrar(contexto, aviso)
-            // TODO Paso 8: avisar al ViewModel si no se mostró.
+            if (!Notificador.mostrar(contexto, aviso)) vm.noSePudoMostrar()
         }
     }
 
@@ -102,7 +105,6 @@ fun PantallaAvisos(vm: AvisosViewModel) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             TarjetaAvisos("Permiso de notificaciones") {
-                // TODO Paso 8: mostrar el mensaje y el acceso a ajustes.
                 EstadoPermiso(permiso)
                 Button(
                     onClick = {
@@ -138,6 +140,27 @@ fun PantallaAvisos(vm: AvisosViewModel) {
 
             TarjetaAvisos("Avisos") {
                 Button(onClick = vm::avisarAhora) { Text("Mostrar aviso") }
+            }
+
+            mensaje?.let { texto ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                ) {
+                    Text(texto, modifier = Modifier.padding(12.dp))
+                }
+                OutlinedButton(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, contexto.packageName)
+                        ajustes.launch(intent)
+                    }
+                ) {
+                    Text("Abrir ajustes")
+                }
             }
 
             TarjetaAvisos("Receptor de anuncios") {
