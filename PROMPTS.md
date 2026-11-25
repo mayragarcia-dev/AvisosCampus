@@ -5,3 +5,4 @@ La solicitud «continua con la fase 2» se trabajó con Codex. El acceso automat
 | Prompt para Gemini | Qué respondió Gemini | Qué implementé con Codex | Por qué |
 | --- | --- | --- | --- |
 | ¿Cómo puedo mostrar el texto completo de una notificación al expandirla y conservar su resumen en AndroidX? | Pendiente de consulta. | Añadí `NotificationCompat.BigTextStyle` a `Notificador` y conservé `setContentText`. | Android dispone del texto completo al expandir el aviso y del resumen para la vista compacta. El ViewModel sigue emitiendo el mismo `Aviso`. |
+| ¿Cómo puedo registrar un canal Urgentes de importancia alta y enviar allí los recordatorios sin usar APIs de Android en el ViewModel? | Pendiente de consulta. | Registré ambos canales al iniciar. `Notificador` selecciona Urgentes cuando el origen es `RECORDATORIO`. | El origen ya identifica el aviso. El canal y la prioridad se deciden donde se publica la notificación. |

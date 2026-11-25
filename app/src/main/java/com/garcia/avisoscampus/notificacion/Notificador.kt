@@ -15,16 +15,22 @@ import androidx.core.content.ContextCompat
 import com.garcia.avisoscampus.MainActivity
 import com.garcia.avisoscampus.R
 import com.garcia.avisoscampus.model.Aviso
+import com.garcia.avisoscampus.model.Origen
 
 object Notificador {
     const val CANAL = "avisos"
+    private const val CANAL_URGENTES = "urgentes"
 
     fun crearCanal(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val canal = NotificationChannel(CANAL, "Avisos", NotificationManager.IMPORTANCE_DEFAULT).apply {
+            val avisos = NotificationChannel(CANAL, "Avisos", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Notificaciones de la app"
             }
-            context.getSystemService(NotificationManager::class.java).createNotificationChannel(canal)
+            val urgentes = NotificationChannel(CANAL_URGENTES, "Urgentes", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Recordatorios del laboratorio"
+            }
+            context.getSystemService(NotificationManager::class.java)
+                .createNotificationChannels(listOf(avisos, urgentes))
         }
     }
 
@@ -44,12 +50,15 @@ object Notificador {
 
         val intent = Intent(context, MainActivity::class.java)
         val pendiente = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        val urgente = aviso.origen == Origen.RECORDATORIO
+        val canal = if (urgente) CANAL_URGENTES else CANAL
+        val prioridad = if (urgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
+        val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
             .setStyle(NotificationCompat.BigTextStyle().bigText(aviso.texto))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(prioridad)
             .setContentIntent(pendiente)
             .setAutoCancel(true)
             .build()
