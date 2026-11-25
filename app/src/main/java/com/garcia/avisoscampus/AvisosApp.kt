@@ -1,7 +1,11 @@
 package com.garcia.avisoscampus
 
 import android.app.Application
+import com.garcia.avisoscampus.notificacion.Notificador
 
 class AvisosApp : Application() {
-    // TODO Paso 1: crear el canal al iniciar la aplicación.
+    override fun onCreate() {
+        super.onCreate()
+        Notificador.crearCanal(this)
+    }
 }
