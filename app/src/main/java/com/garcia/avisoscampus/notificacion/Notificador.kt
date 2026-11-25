@@ -1,12 +1,16 @@
 package com.garcia.avisoscampus.notificacion
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.garcia.avisoscampus.R
 import com.garcia.avisoscampus.model.Aviso
 
 object Notificador {
@@ -31,7 +35,24 @@ object Notificador {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // TODO Pasos 3 y 4: publicar el aviso y abrir la app al tocarlo.
-    @Suppress("UNUSED_PARAMETER")
-    fun mostrar(contexto: Context, aviso: Aviso): Boolean = false
+    @SuppressLint("MissingPermission")
+    fun mostrar(context: Context, aviso: Aviso): Boolean {
+        if (!tienePermiso(context)) return false
+
+        val notificacion = NotificationCompat.Builder(context, CANAL)
+            .setSmallIcon(R.drawable.ic_notificacion)
+            .setContentTitle(aviso.titulo)
+            .setContentText(aviso.texto)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            // TODO Paso 4: abrir la app al tocar la notificación.
+            .build()
+
+        return try {
+            NotificationManagerCompat.from(context).notify(aviso.id, notificacion)
+            true
+        } catch (_: SecurityException) {
+            false
+        }
+    }
 }

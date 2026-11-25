@@ -96,8 +96,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
             }
 
             TarjetaAvisos("Avisos") {
-                // TODO Paso 3: conectar el botón con el ViewModel.
-                Button(onClick = {}, enabled = false) { Text("Mostrar aviso") }
+                Button(onClick = vm::avisarAhora) { Text("Mostrar aviso") }
             }
 
             TarjetaAvisos("Recordatorio") {
