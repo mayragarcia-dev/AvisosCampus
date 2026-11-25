@@ -43,6 +43,7 @@ import com.garcia.avisoscampus.viewmodel.AvisosViewModel
 fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
+    val faltan by vm.faltan.collectAsState()
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
         vm::permisoRespondido
@@ -95,16 +96,26 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 }
             }
 
-            TarjetaAvisos("Avisos") {
-                Button(onClick = vm::avisarAhora) { Text("Mostrar aviso") }
+            TarjetaAvisos("Recordatorio") {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { vm.recordarEn() }, enabled = faltan == null) {
+                        Text("Recordar en 10 s")
+                    }
+                    OutlinedButton(onClick = vm::cancelarRecordatorio, enabled = faltan != null) {
+                        Text("Cancelar")
+                    }
+                }
+                faltan?.let { segundos ->
+                    Text(
+                        text = "Faltan $segundos s",
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
 
-            TarjetaAvisos("Recordatorio") {
-                // TODO Paso 5: conectar los botones y mostrar la cuenta regresiva.
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = {}, enabled = false) { Text("Recordar en 10 s") }
-                    OutlinedButton(onClick = {}, enabled = false) { Text("Cancelar") }
-                }
+            TarjetaAvisos("Avisos") {
+                Button(onClick = vm::avisarAhora) { Text("Mostrar aviso") }
             }
 
             TarjetaAvisos("Receptor de anuncios") {
